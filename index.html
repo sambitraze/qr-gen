@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    input, button { margin: 0.5rem 0; padding: 0.5rem; }
+    #qr-container { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>QR Code Generator (Frontend Only)</h2>
+
+  <label>Text / URL: </label><br />
+  <input id="qr-text" type="text" placeholder="Enter text or link" size="50" /><br />
+
+  <label>Center Image URL (optional):</label><br />
+  <input id="logo-url" type="text" placeholder="e.g. https://yourdomain.com/logo.png" size="50" /><br />
+
+  <button onclick="generateQR()">Generate QR</button>
+  <button onclick="downloadQR()">Download PNG</button>
+
+  <div id="qr-container"></div>
+
+  <script>
+    let qr;
+
+    function generateQR() {
+      const text = document.getElementById("qr-text").value.trim();
+      const logo = document.getElementById("logo-url").value.trim();
+
+      if (!text) return alert("Please enter some text or URL");
+
+      // remove old qr if present
+      document.getElementById("qr-container").innerHTML = "";
+
+      qr = new QRCodeStyling({
+        width: 300,
+        height: 300,
+        data: text,
+        margin: 4,
+        image: logo || undefined,
+        dotsOptions: {
+          color: "#000",
+          type: "rounded"
+        },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 10
+        }
+      });
+
+      qr.append(document.getElementById("qr-container"));
+    }
+
+    function downloadQR() {
+      if (!qr) return alert("Generate QR first");
+      qr.download({ name: "qr-code", extension: "png" });
+    }
+  </script>
+</body>
+</html>
