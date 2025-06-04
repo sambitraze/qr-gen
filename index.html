@@ -1,26 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>QR Code Generator</title>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 2rem; }
-    input, button { margin: 0.5rem 0; padding: 0.5rem; }
-    #qr-container { margin-top: 1rem; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select, button {
+      padding: 0.5rem;
+      margin: 0.3rem 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    #qr-container {
+      margin-top: 1rem;
+    }
+    .controls {
+      margin-bottom: 2rem;
+    }
   </style>
 </head>
 <body>
-  <h2>QR Code Generator (Frontend Only)</h2>
+  <h2>🎯 QR Code Generator</h2>
 
-  <label>Text / URL: </label><br />
-  <input id="qr-text" type="text" placeholder="Enter text or link" size="50" /><br />
+  <div class="controls">
+    <label>Text / URL</label>
+    <input id="qr-text" type="text" placeholder="Enter text or URL" />
 
-  <label>Center Image URL (optional):</label><br />
-  <input id="logo-url" type="text" placeholder="e.g. https://yourdomain.com/logo.png" size="50" /><br />
+    <label>Center Image URL (optional)</label>
+    <input id="logo-url" type="text" placeholder="https://yourdomain.com/logo.png" />
 
-  <button onclick="generateQR()">Generate QR</button>
-  <button onclick="downloadQR()">Download PNG</button>
+    <label>Size (px)</label>
+    <input id="qr-size" type="number" value="300" min="100" max="1000" />
+
+    <label>Dot Style</label>
+    <select id="dot-style">
+      <option value="rounded">Rounded</option>
+      <option value="dots">Dots</option>
+      <option value="classy">Classy</option>
+      <option value="classy-rounded">Classy Rounded</option>
+      <option value="square">Square</option>
+      <option value="extra-rounded">Extra Rounded</option>
+    </select>
+
+    <label>Dot Color</label>
+    <input id="dot-color" type="color" value="#000000" />
+
+    <label>Download Filename (optional)</label>
+    <input id="qr-filename" type="text" placeholder="e.g. dr-meena-qr" />
+
+    <button onclick="generateQR()">Generate QR</button>
+    <button onclick="downloadQR()">⬇️ Download</button>
+    <button onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+  </div>
 
   <div id="qr-container"></div>
 
@@ -30,25 +70,27 @@
     function generateQR() {
       const text = document.getElementById("qr-text").value.trim();
       const logo = document.getElementById("logo-url").value.trim();
+      const size = parseInt(document.getElementById("qr-size").value);
+      const dotStyle = document.getElementById("dot-style").value;
+      const color = document.getElementById("dot-color").value;
 
-      if (!text) return alert("Please enter some text or URL");
+      if (!text) return alert("Please enter text or a URL");
 
-      // remove old qr if present
       document.getElementById("qr-container").innerHTML = "";
 
       qr = new QRCodeStyling({
-        width: 300,
-        height: 300,
+        width: size,
+        height: size,
         data: text,
         margin: 4,
         image: logo || undefined,
         dotsOptions: {
-          color: "#000",
-          type: "rounded"
+          color: color,
+          type: dotStyle,
         },
         imageOptions: {
           crossOrigin: "anonymous",
-          margin: 10
+          margin: 8,
         }
       });
 
@@ -56,8 +98,28 @@
     }
 
     function downloadQR() {
-      if (!qr) return alert("Generate QR first");
-      qr.download({ name: "qr-code", extension: "png" });
+      if (!qr) return alert("Generate the QR code first.");
+      const filename = document.getElementById("qr-filename").value || "qr-code";
+      qr.download({ name: filename, extension: "png" });
+    }
+
+    async function copyToClipboard() {
+      if (!qr) return alert("Generate the QR code first.");
+
+      const canvas = document.querySelector("#qr-container canvas");
+      if (!canvas) return alert("QR rendering issue. Try regenerating.");
+
+      canvas.toBlob(async (blob) => {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          alert("✅ QR copied to clipboard!");
+        } catch (err) {
+          console.error(err);
+          alert("❌ Copy failed. Try again or use browser with clipboard API support.");
+        }
+      });
     }
   </script>
 </body>
